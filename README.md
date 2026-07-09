@@ -1,6 +1,8 @@
 # kleao-coolprojects
 Hello! I am a multi-disciplinary engineer striving to develop practical mechanisms that automate processes and enhance daily living. This is where I store &amp; share cool projects I work on. 
 
+*This repo is still under construction, more projects coming soon!**
+
 # Repository Road Map
 
 ## HRI Projects
