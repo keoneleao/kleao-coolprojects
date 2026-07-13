@@ -6,14 +6,14 @@ Hello! I am a mechanical engineer, specializing in robotics and mechatronics, st
 # Repository Road Map
 
 ## HRI Projects
-Projects exploring Human-Robot Interaction (HRI), intelligent automation, and AI systems that learn from or assist human decision-making.
+Projects exploring Human-Robot Interaction (HRI), intelligent automation, and AI systems that learn from or assist human decision-making. [Visit Folder](./HRI_Projects)
 
 ### Cipher-SR
 Status: Feature Complete  
 Languages: Python &nbsp; &nbsp; | &nbsp; &nbsp; Frameworks: PyTorch &nbsp; &nbsp; | &nbsp; &nbsp; Project Type: Machine Learning, Human-Robot Interaction &nbsp; &nbsp; | &nbsp; &nbsp; Difficulty: Pretty Hard
 
 Summary:   
-Cipher-SR is an end-to-end imitation learning framework inspired by Human-Robot Interaction that learns a user's discretionary trading strategy from demonstrations using behavioral cloning.
+Cipher-SR is an end-to-end imitation learning framework inspired by Human-Robot Interaction that learns a user's discretionary trading strategy from demonstrations using behavioral cloning. [Visit Folder](./Cipher-SR)
 
 `Python` `PyTorch` `Behavioral Cloning` `Human-Robot Interaction`
 `Machine Learning` `GUI Development` `Feature Engineering`
