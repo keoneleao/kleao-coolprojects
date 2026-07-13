@@ -9,7 +9,7 @@ Hello! I am a mechanical engineer, specializing in robotics and mechatronics, st
 Projects exploring Human-Robot Interaction (HRI), intelligent automation, and AI systems that learn from or assist human decision-making.
 
 ### Cipher-SR
-Status: Feature Complete 
+Status: Feature Complete  
 Languages: Python &nbsp; &nbsp; | &nbsp; &nbsp; Frameworks: PyTorch &nbsp; &nbsp; | &nbsp; &nbsp; Project Type: Machine Learning, Human-Robot Interaction &nbsp; &nbsp; | &nbsp; &nbsp; Difficulty: Pretty Hard
 
 Summary:   
