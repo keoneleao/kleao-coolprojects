@@ -1,9 +1,24 @@
+# =========================================
+# SCRIPT NAME: test_policy.py
+# PURPOSE:     Loads a trained behavioral cloning model and evaluates it
+#              on another loaded trading dataset. The script reconstructs
+#              sequential state vectors, applies the same feature
+#              normalization used during training, predicts trading
+#              actions, applies trading constraints, and saves the
+#              resulting actions for replay and evaluation.
+# AUTHOR:      Keone Leao
+# DATE:        04/21/26
+# DEPENDENCIES:torch, torch, pandas, pickle, MLPPolicy, Numpy
+# =========================================
+
+## Imports
 import torch
 import pandas as pd
 import pickle
 from models import MLPPolicy
 import numpy as np
 
+# load model & additionally weights, means, standard deviations
 def load_model(path):
     checkpoint = torch.load(path)
 
@@ -16,6 +31,7 @@ def load_model(path):
 
     return model, mean, std
 
+#load dataset
 def load_dataset(path):
     with open(path, "rb") as f:
         df = pickle.load(f)

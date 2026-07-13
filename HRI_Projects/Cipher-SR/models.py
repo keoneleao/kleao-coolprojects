@@ -1,3 +1,13 @@
+# =========================================
+# SCRIPT NAME: models.py
+# PURPOSE:     Defines the neural network architecture  
+#              the training script uses (train_policy.py)
+# AUTHOR:      Keone Leao
+# DATE:        04/21/26
+# DEPENDENCIES:torch, torch.nn
+# =========================================
+
+## Imports
 import torch
 import torch.nn as nn
 
@@ -19,9 +29,9 @@ class MLPPolicy(nn.Module):
         self.relu = nn.ReLU()
 
         self.dropout = nn.Dropout(p=0.2) # prevents the model from memorizing exact states        # loss function (The loss function isn't ever used)
-        # self.mse_loss = nn.CrossEntropyLoss() # apparently this is better for learning small differences 
+        # self.mse_loss = nn.CrossEntropyLoss()(this belongs in training script) # apparently this is better for learning small differences 
                                               # (ex: no ambiguity between 0.2 & 0.3)
-        # self.mse_loss = nn.MSELoss()
+        # self.mse_loss = nn.MSELoss() # this is used when numbers have physical meaning instead of choices (like they are used here)
 
     ## execute robot policy
     # input state output action
