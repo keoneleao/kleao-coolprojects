@@ -1,18 +1,32 @@
+# =========================================
+# SCRIPT NAME: combine.py
+# PURPOSE:     This combines multiple get_stockdataset datasets
+#              to make it a combined bigger dataset for training.
+# AUTHOR:      Keone Leao
+# DATE:        04/21/26
+# DEPENDENCIES:pandas, pickle
+# =========================================
+
+## Imports
 import pandas as pd
 import pickle
 
+# loads dataset file
 def load_pkl(path):
     with open(path, "rb") as f:
         return pickle.load(f)
 
+# saves file
 def save_pkl(df, path):
     with open(path, "wb") as f:
         pickle.dump(df, f)
 
+# function to combine files in file_list to output_path
 def combine_datasets(file_list, output_path):
 
     dfs = []
 
+    # expected cols in each dataset
     expected_cols = [
         "log_close",
         "return_1",
@@ -32,6 +46,7 @@ def combine_datasets(file_list, output_path):
         "Fib_y2"
     ]
 
+    # go through each dataset and append it to the combined dataset
     for file in file_list:
         print(f"Loading {file}")
         df = load_pkl(file)
@@ -52,7 +67,7 @@ def combine_datasets(file_list, output_path):
 
     combined_df = pd.concat(dfs, ignore_index=True)
 
-    # --- Shuffle ---
+    # --- Shuffle --- # Disabled because sequential training relies on temporal ordering
     # combined_df = combined_df.sample(frac=1, random_state=42).reset_index(drop=True)
 
     # --- SAVE PKL ---
@@ -71,9 +86,10 @@ def combine_datasets(file_list, output_path):
 
     print(f"Saved JSON to {json_path}")
 
-
+# Main Script
 if __name__ == "__main__":
 
+    # Files to combine
     files = [
         "Dataset1_03-19_to_03-21.pkl",
         "Dataset2_03-23_to_03-26.pkl",
@@ -87,10 +103,11 @@ if __name__ == "__main__":
         "Dataset10_03-15_to_03-19.pkl"
     ]
 
+    # Combine Files
     combine_datasets(files, "Delete_CombinedDataset1to10_03-08_to_05-02.pkl")
 
     # ----------------------------
-    # VALIDATION (ADD THIS PART)
+    # VALIDATION 
     # ----------------------------
     print("\n--- VALIDATING COMBINED DATASET ---")
 

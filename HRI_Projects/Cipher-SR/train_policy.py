@@ -1,3 +1,13 @@
+# =========================================
+# SCRIPT NAME: train_policy.py
+# PURPOSE:     Trains the behavioral cloning policy using datasets.
+#              Optimizes the neural network using CrossEntropyLoss instead of MSELoss
+# AUTHOR:      Keone Leao
+# DATE:        04/21/26
+# DEPENDENCIES:torch, torch.nn, pickle, MLPPolicy, torch.utils.data, pandas, numpy
+# =========================================
+
+## Imports
 import torch
 import torch.nn as nn
 import pickle
@@ -7,7 +17,7 @@ import pandas as pd
 import numpy as np
 
 
-def build_state(row):
+def build_state(row): # Delete: is not currently being used
     return [
         row["log_close"],
         row["SR_rel"],
@@ -50,14 +60,14 @@ class MyData(Dataset):
             hold_df = group[hold_mask]
             non_hold_df = group[non_hold_mask]
 
-            hold_df = hold_df.iloc[::3]
+            hold_df = hold_df.iloc[::3] # keep every third HOLD
 
             new_group = pd.concat([hold_df, non_hold_df]).sort_index()
             dfs.append(new_group)
 
         df = pd.concat(dfs).reset_index(drop=True)
 
-        SEQ_LEN = 4  # number of timesteps
+        SEQ_LEN = 4  # number of timesteps # sees the last four dataset lines for more educated descisions
 
         states_seq = []
         actions_seq = []
@@ -137,14 +147,14 @@ def train_model(loadname):
     for epoch in range(EPOCH + 1):
         for states, actions in train_set:
 
-            actions_hat = model(states)
+            actions_hat = model(states) # decides an action
 
-            loss = criterion(actions_hat, actions)
+            loss = criterion(actions_hat, actions) # compares predictions against expert demonstrations
 
-            optimizer.zero_grad()
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
-            optimizer.step()
+            optimizer.zero_grad() # so gradients won't accumulate forever
+            loss.backward() # computes gradients
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0) # keep gradient from becoming too large
+            optimizer.step() #updates neural network weights
 
         if epoch % 10 == 0:
             print(epoch, loss.item())

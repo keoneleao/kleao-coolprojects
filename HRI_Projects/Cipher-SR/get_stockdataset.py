@@ -1,3 +1,13 @@
+# =========================================
+# SCRIPT NAME: get_stockdataset.py
+# PURPOSE:     Creates a GUI for user to trade on using real stock data. Saves decisions and important info for training. 
+#              Place support/resistance lines, fib retracements, and buy/sell trades.
+# AUTHOR:      Keone Leao
+# DATE:        04/21/26
+# DEPENDENCIES:matplotlib, matplotlib.pyplot, matplotlib.dates, yfinance, pandas, pickle, numpy, datetime
+# =========================================
+
+## Imports
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
@@ -38,6 +48,7 @@ current_idx = 1 # candle index
 
 # Functions
 
+# Download historical OHLC data and standardize the dataframe format
 def download_data(symbol, start, end, interval):
     df = yf.download(symbol, start=start, end=end, interval=interval, auto_adjust=True)
     if isinstance(df.columns, pd.MultiIndex):
@@ -45,6 +56,7 @@ def download_data(symbol, start, end, interval):
     df.index = pd.to_datetime(df.index)
     return df
 
+# render candlestick bodies and wicks using Matplotlib
 def draw_candles(ax, df):
     dates = mdates.date2num(df.index.to_pydatetime())
     # compute spacing between candles
@@ -70,6 +82,7 @@ def draw_candles(ax, df):
         )
         ax.add_patch(rect)
 
+# removes every dran candle
 def clear_candles(ax):
     # remove line collections (wicks)
     for coll in ax.collections[:]:
@@ -79,6 +92,7 @@ def clear_candles(ax):
     for patch in ax.patches[:]:
         patch.remove()
 
+# reveals one candle at a time
 def draw_next_candle(ax, df, i):
     dates = mdates.date2num(df.index.to_pydatetime())
 
@@ -114,6 +128,7 @@ def draw_next_candle(ax, df, i):
     )
     ax.add_patch(rect)
 
+# only draw candes 0-n
 def render_candles(ax, df, n):
 
     dates = mdates.date2num(df.index.to_pydatetime())
@@ -147,6 +162,7 @@ def render_candles(ax, df, n):
         )
         ax.add_patch(rect)
 
+# set up GUI axies
 def setup_axes(ax, df, symbol):
     ax.set_facecolor('#131722')
     ax.set_ylabel('Price (USD)', color='#d1d4dc', fontsize=11)
@@ -171,6 +187,7 @@ def setup_axes(ax, df, symbol):
     ax.yaxis.label.set_color('#d1d4dc')
     ax.grid(axis='y', color='#2a2e39', linewidth=0.5, linestyle='--')
 
+# consider deleting: not used later
 def compute_atr(df, period=14):
     high_low = df["High"] - df["Low"]
     high_close = (df["High"] - df["Close"].shift()).abs()
@@ -181,7 +198,7 @@ def compute_atr(df, period=14):
     return atr
 
 
-
+# mouse click snaps to nearest visible candle price of OHLC
 def snap_to_candle(df, x, y):
     global current_idx
     dates = mdates.date2num(df.index.to_pydatetime())
@@ -206,6 +223,7 @@ def snap_to_candle(df, x, y):
 
     return idx, closest_label, snapped_price
 
+# compute normalized current price to neareset SR level for training
 def update_sr_state_for_candle(i):
     if len(sr_levels) == 0:
         return
@@ -227,6 +245,7 @@ def update_sr_state_for_candle(i):
     state_df.iat[i, state_df.columns.get_loc("SR_exists")] = 1
     state_df.iat[i, state_df.columns.get_loc("SR_price")] = nearest_sr
 
+# returns relative position inside fib retracement (between 0-1)
 def update_fib_state_for_candle(i):
 
     # skip ONLY if user is currently placing fib points
@@ -257,23 +276,24 @@ def update_fib_state_for_candle(i):
     state_df.iat[i, state_df.columns.get_loc("Fib_y1")] = y1
     state_df.iat[i, state_df.columns.get_loc("Fib_y2")] = y2
 
+# Handles keyboard shortcuts
 def onkey(event):
     global mode, fig, current_idx
 
     print(f"Key pressed: {event.key}") # lets you know what key has been pressed
 
-    if event.key == 'f':
+    if event.key == 'f': # clicking makes a fib
         mode = "fib"
         print("Switched to Fibonacci tool")
 
-    elif event.key == 'd':
+    elif event.key == 'd': # clicking makes a SR line
         mode = "sr"
         print("Switched to Support/Resistance tool")
 
         # Optional: clear unfinished fib
         #fib_points.clear()
 
-    elif event.key == 'e':
+    elif event.key == 'e': # erases last SR line
         print("Removing last SR line")
 
         if len(sr_levels) == 0:
@@ -304,7 +324,7 @@ def onkey(event):
             update_sr_state_for_candle(i)
         
 
-    elif event.key == ' ':
+    elif event.key == ' ': # space reveals next candle
 
         if current_idx >= len(df):
             print("End of dataset reached")
@@ -320,11 +340,11 @@ def onkey(event):
 
         current_idx += 1
 
-    elif event.key == 't':
+    elif event.key == 't': # clicking now buys/sells
         mode = "trade"
         print("Switched to Buy/Sell tool")
 
-    elif event.key == 'c':
+    elif event.key == 'c': # clears trades
         print("Clearing trades")
 
         for item in trade_lines + trade_markers:
@@ -337,19 +357,20 @@ def onkey(event):
         trade_markers.clear()
         trades.clear()
 
-    elif event.key == 'p':
+    elif event.key == 'p': # print an update of visible candes to terminal
         print("\nSTATE SNAPSHOT (visible candles):\n")
 
         visible_df = state_df.iloc[:current_idx]
 
         print(visible_df.tail(5).to_string())
 
-    elif event.key == 'x':
+    elif event.key == 'x': # disable clicking input in GUI
         mode = "none"
         print("Mouse input disabled")
 
     fig.canvas.draw_idle()
 
+# draws fib
 def draw_fib(ax, p1, p2):
     (x1, y1), (x2, y2) = p1, p2
 
@@ -395,6 +416,7 @@ def draw_fib(ax, p1, p2):
 
     return artists
 
+# removes fib and recorded state
 def clear_fib():
     global fib_active
     fib_active = False
@@ -417,6 +439,7 @@ def clear_fib():
     state_df.loc[state_df.index[start_idx]:, "Fib_y2"] = float("nan")
     state_df.loc[state_df.index[start_idx]:, "Fib_exists"] = 0
 
+# clicking does different things based on keyboard shortcut mode
 def onclick(event):
     if event.inaxes != ax:
         return
@@ -718,8 +741,4 @@ print(f"State saved to {pkl_name}")
 # 4. Creating a whole test code for my specific circumstances []
 # 5. Making the replay GUI? (this one wan't really a challenge) [didn't really learn anything but code strucutre, might take the challenge out]
 # 6. Getting data, I need to get multiple datasets that are good datasets (what is a good dataset?) []
-# - went far enough outside of class to reinforce the topic, learn new applications in different circumstances (lots of HOLDs)
 
-# To-Do:
-# increase the amount of demonstrations
-# fine tune the parameters, architecture, etc

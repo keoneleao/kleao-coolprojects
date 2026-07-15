@@ -1,3 +1,12 @@
+# =========================================
+# SCRIPT NAME: replay.py
+# PURPOSE:     Allows user to see a dataset, from get_stockdataset.py or test_policy.py
+# AUTHOR:      Keone Leao
+# DATE:        04/21/26
+# DEPENDENCIES:pandas, pickle, matplotlib.pyplot, matplotlib, matplotlib.dates, numpy, matplotlib.ticker
+# =========================================
+
+## Imports
 import pandas as pd
 import pickle
 import matplotlib.pyplot as plt
@@ -73,10 +82,10 @@ class ReplayEngine:
     def on_key(self, event):
         print("KEY:", event.key)
 
-        if event.key == " ":
+        if event.key == " ": # pause play
             self.paused = not self.paused
 
-        elif event.key == "right":
+        elif event.key == "right": # step forward a candle stick
             self.step()
 
         elif event.key == "left":
@@ -123,7 +132,7 @@ class ReplayEngine:
             spine.set_color('#2a2e39')
             spine.set_linewidth(1.2)
 
-        # 👇 ADD THIS
+        # Axis Formatting
         self.ax.xaxis_date()
 
         self.ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%d %H:%M"))
