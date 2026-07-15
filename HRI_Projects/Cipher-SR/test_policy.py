@@ -24,14 +24,14 @@ def load_model(path):
 
     model = MLPPolicy(state_dim=20, hidden_dim=96, action_dim=3)
     model.load_state_dict(checkpoint["model"])
-    model.eval()
+    model.eval() # tells PyTorch, modeling is over & disables Dropout
 
     mean = checkpoint["mean"]
     std = checkpoint["std"]
 
     return model, mean, std
 
-#load dataset
+#load dataset while preserving replay information
 def load_dataset(path):
     with open(path, "rb") as f:
         df = pickle.load(f)
@@ -57,9 +57,10 @@ def load_dataset(path):
 
     return df
 
-
+# Execute trained policy on loaded dataset
+# construct a dataset off this
 def run_policy(model, df, mean, std):
-    history = []
+    history = [] # consider deleteing: never used
 
     SEQ_LEN = 4
     state_cols = [
@@ -72,10 +73,10 @@ def run_policy(model, df, mean, std):
         # "Fib_exists"
     ]
 
-
-    position = 0  # 0 = flat, 1 = long
-    entry_price = 0
-    pnl = 0
+    # variables help model during training
+    position = 0  # 0 = flat, 1 = long # in position?
+    entry_price = 0  # entry position
+    pnl = 0 # profit/loss
 
     logs = []
 
@@ -89,15 +90,15 @@ def run_policy(model, df, mean, std):
     # print("-" * 70)
 
 
-
+    # main training loop
     for i in range(len(df)):
 
         row = df.iloc[i]
         action = 1  # default HOLD
 
-        if i >= SEQ_LEN:
+        if i >= SEQ_LEN: # wait until you have 4 previous states to start making decisions
 
-            seq = []
+            seq = [] # put previous 4 states into 20 dimensional input
             for j in range(i - SEQ_LEN, i):
                 row_j = df.iloc[j]
                 seq.append([row_j[col] for col in state_cols])
@@ -108,9 +109,9 @@ def run_policy(model, df, mean, std):
             # --- APPLY TRAINING NORMALIZATION ---
             state = (state - mean) / std
 
-            state = state.unsqueeze(0)
+            state = state.unsqueeze(0) # convert 20 into 1x20
 
-            with torch.no_grad():
+            with torch.no_grad(): # disables gradient computation during inference for speed and less memory
                 logits = model(state)
 
                 # --- CONFIDENCE DEBUG ---
@@ -122,7 +123,7 @@ def run_policy(model, df, mean, std):
                 action = raw_action
 
                 # --- RANDOM ACTION OVERRIDE ---
-                RANDOM_MODE = True
+                RANDOM_MODE = False # True: actions are random instead of using trained model
 
                 if RANDOM_MODE:
 
@@ -131,7 +132,7 @@ def run_policy(model, df, mean, std):
 
                     action = np.random.choice([0, 1, 2], p=random_probs)
 
-                # apply filter
+                # apply filter (do not buy/sell unless confident enough)
                 if action != 1 and conf < 0.85:
                     action = 1
 
@@ -175,21 +176,7 @@ def run_policy(model, df, mean, std):
 
                 print(f"Probs: {probs.numpy()} | Conf: {conf:.3f} | Raw: {raw_action} | Final: {action}")
 
-        # if i < 10:
-        #     print(
-        #         f"{row['Open']:8.2f} "
-        #         f"{row['High']:8.2f} "
-        #         f"{row['Low']:8.2f} "
-        #         f"{row['Close']:8.2f} "
-        #         f"{row['SR_rel']:8.2f} "
-        #         # f"{row['Fib_pos']:8.2f} "
-        #         # f"{row['Fib_exists']:8.2f} "
-        #         f"{action:8d}"
-        #     )
-
-        # -------------------
-        # LOG EVERYTHING (NO SKIPS)
-        # -------------------
+        
 
         record = {
             "i": i,
@@ -218,30 +205,6 @@ def run_policy(model, df, mean, std):
             row["Fib_y2"]
         ])
 
-        # if action != 1 and (i - last_printed_trade > 5):
-
-        #     print("\n=== TRADE EVENT ===")
-
-        #     start = max(0, i - 3)
-        #     end = min(len(df) - 1, i + 3)
-
-        #     for j in range(start, end + 1):
-        #         r = df.iloc[j]
-
-        #         print(
-        #             f"{r['Open']:8.2f} "
-        #             f"{r['High']:8.2f} "
-        #             f"{r['Low']:8.2f} "
-        #             f"{r['Close']:8.2f} "
-        #             f"{r['SR_rel']:8.2f} "
-        #             # f"{r['Fib_pos']:8.2f} "
-        #             # f"{r['Fib_exists']:8.2f} "
-        #             f"{action:8d}"
-        #         )
-
-        #     print("===================\n")
-
-        #     last_printed_trade = i
 
     columns = [
         "log_close",
